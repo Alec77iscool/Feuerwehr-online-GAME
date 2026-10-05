@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feuerwehr – Einsatzleitung</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<section id="mainMenu" class="screen active">
+  <div class="logo">
+    <div class="logo-fire">🔥</div>
+    <h1>FEUERWEHR</h1>
+    <span>EINSATZLEITUNG</span>
+  </div>
+  <div class="main-menu">
+    <button id="freeGameBtn" class="main-button free-game">🚒 Freies Spiel</button>
+    <button id="missionSelectBtn" class="main-button mission-button">🚨 Einsatz-Auswahl</button>
+  </div>
+  <div class="version">Version 0.2</div>
+</section>
+
+<section id="missionMenu" class="screen">
+  <div class="menu-header">
+    <h2>🚨 Einsatz-Auswahl</h2>
+    <p>Wähle einen Einsatz aus.</p>
+  </div>
+  <div id="missionList" class="mission-list"></div>
+  <button id="backFromMissions" class="back-button">← Zurück</button>
+</section>
+
+<section id="gameScreen" class="screen">
+  <header class="game-header">
+    <div class="game-logo">🔥 FEUERWEHR</div>
+    <div id="gameStatus" class="game-status">Wache bereit</div>
+    <button id="backToMenu" class="menu-button">Menü</button>
+  </header>
+
+  <div id="timerPanel" class="timer-panel hidden">
+    <div class="timer-label">Nächster möglicher Einsatz</div>
+    <div id="freeTimer" class="timer">04:00</div>
+  </div>
+
+  <div id="missionInfo" class="mission-info hidden">
+    <div id="missionTitle">Einsatz</div>
+    <div id="missionDescription">-</div>
+  </div>
+
+  <div id="missionLocation" class="mission-location hidden">📍 Einsatzstelle</div>
+
+  <div id="worldViewport" class="world-viewport">
+    <div id="world" class="world">
+      <div id="vehicleArea"></div>
+    </div>
+  </div>
+
+  <div id="vehiclePanel" class="vehicle-panel hidden">
+    <div class="panel-header">
+      <strong id="selectedVehicleName">Fahrzeug</strong>
+      <button id="closeVehiclePanel">✕</button>
+    </div>
+    <div id="vehicleActions" class="vehicle-actions"></div>
+  </div>
+
+  <div id="pager" class="pager hidden">
+    <div class="pager-icon">📟</div>
+    <h2>EINSATZALARM</h2>
+    <p id="pagerMission">Einsatz</p>
+    <button id="pagerButton">🚒 Ausrücken</button>
+  </div>
+</section>
+
+<script src="game.js"></script>
+</body>
+</html>
