@@ -1,1285 +1,393 @@
-"use strict";
-
-/*
- * ==========================================
- * FEUERWEHR EINSATZLEITUNG
- * Version 0.1
- * ==========================================
- */
-
-const state = {
-
-  screen: "menu",
-
-  mode: null,
-
-  camera: {
-    x: -800,
-    y: -500,
-    zoom: 0.65,
-
-    dragging: false,
-    lastX: 0,
-    lastY: 0
-  },
-
-  freeGame: {
-    timer: 240,
-    timerRunning: false,
-    activeMission: false
-  },
-
-  alarm: {
-    active: false,
-    pagerVisible: false
-  },
-
-  selectedVehicle: null,
-
-  mission: null
-};
-
-
 /* ==========================================
-   FAHRZEUGE
+   KARTE ERSTELLEN
 ========================================== */
 
-const vehicles = [
+function createMap() {
 
-  {
-    id: "elw1",
-    type: "ELW",
-    name: "ELW 1",
-    count: 1,
-    color: "#d71920",
-    activity: "Einsatzleitung"
-  },
+  if (!world) return;
 
-  {
-    id: "hlf1",
-    type: "HLF",
-    name: "HLF 10-1",
-    count: 1,
-    color: "#d71920",
-    activity: "Brandbekämpfung / TH"
-  },
-
-  {
-    id: "hlf2",
-    type: "HLF",
-    name: "HLF 10-2",
-    count: 1,
-    color: "#d71920",
-    activity: "Brandbekämpfung / TH"
-  },
-
-  {
-    id: "dlk1",
-    type: "DLK",
-    name: "DLK 1",
-    count: 1,
-    color: "#d71920",
-    activity: "Drehleiter"
-  },
-
-  {
-    id: "dlk2",
-    type: "DLK",
-    name: "DLK 2",
-    count: 1,
-    color: "#d71920",
-    activity: "Drehleiter"
-  },
-
-  {
-    id: "lhf1",
-    type: "LHF",
-    name: "LHF 1",
-    count: 1,
-    color: "#d71920",
-    activity: "Brandbekämpfung"
-  },
-
-  {
-    id: "lhf2",
-    type: "LHF",
-    name: "LHF 2",
-    count: 1,
-    color: "#d71920",
-    activity: "Brandbekämpfung"
-  },
-
-  {
-    id: "lhf3",
-    type: "LHF",
-    name: "LHF 3",
-    count: 1,
-    color: "#d71920",
-    activity: "Brandbekämpfung"
-  },
-
-  {
-    id: "rtw1",
-    type: "RTW",
-    name: "RTW 1",
-    count: 1,
-    color: "#f4f4f4",
-    activity: "Patientenversorgung"
-  },
-
-  {
-    id: "rtw2",
-    type: "RTW",
-    name: "RTW 2",
-    count: 1,
-    color: "#f4f4f4",
-    activity: "Patientenversorgung"
-  },
-
-  {
-    id: "nef1",
-    type: "NEF",
-    name: "NEF 1",
-    count: 1,
-    color: "#f4f4f4",
-    activity: "Notarztversorgung"
-  }
-
-];
-
-
-/* ==========================================
-   EINSÄTZE
-========================================== */
-
-const missions = [
-
-  {
-    id: "traffic",
-    name: "Verkehrsunfall an Kreuzung",
-    category: "Klein",
-    duration: "3–5 Minuten",
-    description: "Verkehrsunfall mit möglicher verletzter Person.",
-    icon: "🚗💥"
-  },
-
-  {
-    id: "container",
-    name: "Müllcontainerbrand",
-    category: "Klein",
-    duration: "3–5 Minuten",
-    description: "Brennender Müllcontainer mit Ausbreitungsgefahr.",
-    icon: "🗑️🔥"
-  },
-
-  {
-    id: "kitchen",
-    name: "Küchenbrand",
-    category: "Klein",
-    duration: "3–5 Minuten",
-    description: "Brand in einer Küche mit starker Rauchentwicklung.",
-    icon: "🏠🔥"
-  },
-
-  {
-    id: "hall",
-    name: "Hallenbrand",
-    category: "Mittel",
-    duration: "5–10 Minuten",
-    description: "Brand in einer größeren Halle.",
-    icon: "🏭🔥"
-  },
-
-  {
-    id: "house",
-    name: "Großbrand Familienhaus",
-    category: "Groß",
-    duration: "5–10 Minuten",
-    description: "Großbrand in einem Familienhaus.",
-    icon: "🏠🔥"
-  },
-
-  {
-    id: "mall",
-    name: "Einkaufszentrum – Großbrand",
-    category: "Groß",
-    duration: "10–20 Minuten",
-    description: "Großflächiger Brand in einem Einkaufszentrum.",
-    icon: "🏬🔥"
-  },
-
-  {
-    id: "forest",
-    name: "Waldbrand",
-    category: "Groß",
-    duration: "10–20 Minuten",
-    description: "Dynamischer Waldbrand mit Ausbreitungsgefahr.",
-    icon: "🌲🔥"
-  },
-
-  {
-    id: "bigTraffic",
-    name: "Verkehrsunfall an großer Kreuzung",
-    category: "Groß",
-    duration: "5–10 Minuten",
-    description: "Mehrere Fahrzeuge und mögliche Verletzte.",
-    icon: "🚗💥"
-  }
-
-];
-
-
-/* ==========================================
-   DOM
-========================================== */
-
-const mainMenu = document.getElementById("mainMenu");
-const missionMenu = document.getElementById("missionMenu");
-const gameScreen = document.getElementById("gameScreen");
-
-const freeGameBtn = document.getElementById("freeGameBtn");
-const missionSelectBtn = document.getElementById("missionSelectBtn");
-
-const backFromMissions = document.getElementById("backFromMissions");
-const backToMenu = document.getElementById("backToMenu");
-
-const missionList = document.getElementById("missionList");
-
-const worldViewport = document.getElementById("worldViewport");
-const world = document.getElementById("world");
-
-const vehicleArea = document.getElementById("vehicleArea");
-
-const timerPanel = document.getElementById("timerPanel");
-const freeTimer = document.getElementById("freeTimer");
-
-const missionInfo = document.getElementById("missionInfo");
-const missionTitle = document.getElementById("missionTitle");
-const missionDescription = document.getElementById("missionDescription");
-
-const missionLocation = document.getElementById("missionLocation");
-
-const pager = document.getElementById("pager");
-const pagerMission = document.getElementById("pagerMission");
-const pagerButton = document.getElementById("pagerButton");
-
-const vehiclePanel = document.getElementById("vehiclePanel");
-const selectedVehicleName = document.getElementById("selectedVehicleName");
-const vehicleActions = document.getElementById("vehicleActions");
-const closeVehiclePanel = document.getElementById("closeVehiclePanel");
-
-const gameStatus = document.getElementById("gameStatus");
-
-
-/* ==========================================
-   MENÜ
-========================================== */
-
-function showScreen(screen) {
-
-  mainMenu.classList.remove("active");
-  missionMenu.classList.remove("active");
-  gameScreen.classList.remove("active");
-
-  screen.classList.add("active");
-}
-
-
-freeGameBtn.addEventListener("click", () => {
-
-  state.mode = "free";
-
-  startGame();
-
-  timerPanel.classList.remove("hidden");
-
-  startFreeGameTimer();
-});
-
-
-missionSelectBtn.addEventListener("click", () => {
-
-  showScreen(missionMenu);
-
-  renderMissionList();
-
-});
-
-
-backFromMissions.addEventListener("click", () => {
-
-  showScreen(mainMenu);
-
-});
-
-
-backToMenu.addEventListener("click", () => {
-
-  location.reload();
-
-});
-
-
-/* ==========================================
-   EINSATZAUSWAHL
-========================================== */
-
-function renderMissionList() {
-
-  missionList.innerHTML = "";
-
-  missions.forEach(mission => {
-
-    const card = document.createElement("div");
-
-    card.className = "mission-card";
-
-    card.innerHTML = `
-      <h3>${mission.icon} ${mission.name}</h3>
-
-      <p>
-        <strong>Kategorie:</strong> ${mission.category}<br>
-        <strong>Dauer:</strong> ${mission.duration}
-      </p>
-
-      <p>${mission.description}</p>
-
-      <button data-mission="${mission.id}">
-        Einsatz starten
-      </button>
-    `;
-
-    missionList.appendChild(card);
-
+  // Alte Karte löschen
+  world.querySelectorAll(".map-object").forEach(el => {
+    el.remove();
   });
 
-  document
-    .querySelectorAll("[data-mission]")
-    .forEach(button => {
-
-      button.addEventListener("click", () => {
-
-        const mission = missions.find(
-          m => m.id === button.dataset.mission
-        );
-
-        startSelectedMission(mission);
-
-      });
-
-    });
-
-}
-
-
-/* ==========================================
-   SPIEL START
-========================================== */
-
-function startGame() {
-
-  showScreen(gameScreen);
-
-  resetCamera();
-
-  createVehicles();
-
-  gameStatus.textContent = "Wache bereit";
-
-  missionInfo.classList.add("hidden");
-  missionLocation.classList.add("hidden");
-  pager.classList.add("hidden");
-
-}
-
-
-function startSelectedMission(mission) {
-
-  state.mode = "mission";
-
-  state.freeGame.activeMission = true;
-
-  state.mission = mission;
-
-  startGame();
-
-  startMission(mission);
-
-}
-
-
-/* ==========================================
-   FAHRZEUGE ERSTELLEN
-========================================== */
-
-function createVehicles() {
-
-  vehicleArea.innerHTML = "";
-
-  vehicles.forEach((vehicle, index) => {
-
-    const element = document.createElement("div");
-
-    element.className = "vehicle";
-
-    element.dataset.vehicle = vehicle.id;
-
-    element.style.background = vehicle.color;
-
-    /*
-     * 4 Stellplätze pro Reihe.
-     */
-
-    const column = index % 4;
-    const row = Math.floor(index / 4);
-
-    element.style.left = `${45 + column * 100}px`;
-    element.style.top = `${250 + row * 65}px`;
-
-    element.innerHTML = `
-      <div class="blue-light"></div>
-      ${vehicle.name}
-    `;
-
-    vehicleArea.appendChild(element);
-
-    element.addEventListener("click", event => {
-
-      event.stopPropagation();
-
-      selectVehicle(vehicle, element);
-
-    });
-
-  });
-
-}
-
-
-/* ==========================================
-   FAHRZEUG AUSWÄHLEN
-========================================== */
-
-function selectVehicle(vehicle, element) {
-
-  state.selectedVehicle = vehicle;
-
-  selectedVehicleName.textContent = vehicle.name;
-
-  vehicleActions.innerHTML = "";
-
-  const actions = getVehicleActions(vehicle);
-
-  actions.forEach(action => {
-
-    const button = document.createElement("button");
-
-    button.className = "vehicle-action";
-
-    button.textContent = action.name;
-
-    button.addEventListener("click", () => {
-
-      action.run(vehicle, element);
-
-    });
-
-    vehicleActions.appendChild(button);
-
-  });
-
-  vehiclePanel.classList.remove("hidden");
-
-}
-
-
-closeVehiclePanel.addEventListener("click", () => {
-
-  vehiclePanel.classList.add("hidden");
-
-});
-
-
-/* ==========================================
-   FAHRZEUGFUNKTIONEN
-========================================== */
-
-function getVehicleActions(vehicle) {
-
-  const actions = [];
-
-  if (vehicle.type === "ELW") {
-
-    actions.push({
-      name: "📡 Einsatzleitung",
-      run: () => {
-
-        gameStatus.textContent =
-          `${vehicle.name}: Einsatzleitung aktiv`;
-
-      }
-    });
-
-  }
-
-  if (
-    vehicle.type === "HLF" ||
-    vehicle.type === "LHF"
-  ) {
-
-    actions.push({
-      name: "💧 Hydrant anschließen",
-      run: () => {
-
-        gameStatus.textContent =
-          `${vehicle.name}: Hydrant angeschlossen`;
-
-      }
-    });
-
-    actions.push({
-      name: "🚿 Schnellangriff",
-      run: () => {
-
-        gameStatus.textContent =
-          `${vehicle.name}: Schnellangriff eingesetzt`;
-
-      }
-    });
-
-    actions.push({
-      name: "🔥 Strahlrohr einsetzen",
-      run: () => {
-
-        gameStatus.textContent =
-          `${vehicle.name}: Strahlrohr aktiv`;
-
-      }
-    });
-
-  }
-
-  if (vehicle.type === "HLF") {
-
-    actions.push({
-      name: "🛠️ Technische Hilfeleistung",
-      run: () => {
-
-        gameStatus.textContent =
-          `${vehicle.name}: Technische Hilfeleistung`;
-
-      }
-    });
-
-  }
-
-  if (vehicle.type === "DLK") {
-
-    actions.push({
-      name: "🪜 Leiter ausfahren",
-      run: () => {
-
-        gameStatus.textContent =
-          `${vehicle.name}: Leiter wird ausgefahren`;
-
-      }
-    });
-
-    actions.push({
-      name: "↔️ Leiter positionieren",
-      run: () => {
-
-        gameStatus.textContent =
-          `${vehicle.name}: Leiter positioniert`;
-
-      }
-    });
-
-    actions.push({
-      name: "💧 Wasser über DLK",
-      run: () => {
-
-        gameStatus.textContent =
-          `${vehicle.name}: Wasserabgabe aktiviert`;
-
-      }
-    });
-
-  }
-
-  if (vehicle.type === "RTW") {
-
-    actions.push({
-      name: "🩺 Patientenversorgung",
-      run: () => {
-
-        gameStatus.textContent =
-          `${vehicle.name}: Patientenversorgung`;
-
-      }
-    });
-
-    actions.push({
-      name: "🚑 Patient aufnehmen",
-      run: () => {
-
-        gameStatus.textContent =
-          `${vehicle.name}: Patient aufgenommen`;
-
-      }
-    });
-
-  }
-
-  if (vehicle.type === "NEF") {
-
-    actions.push({
-      name: "👨‍⚕️ Notarzt aussteigen",
-      run: () => {
-
-        gameStatus.textContent =
-          `${vehicle.name}: Notarzt im Einsatz`;
-
-      }
-    });
-
-    actions.push({
-      name: "🩺 Notfallversorgung",
-      run: () => {
-
-        gameStatus.textContent =
-          `${vehicle.name}: Notfallversorgung`;
-
-      }
-    });
-
-  }
-
-  actions.push({
-    name: "🚒 Ausrücken",
-    run: () => {
-
-      deployVehicle(vehicle);
-
-    }
-  });
-
-  return actions;
-}
-
-
-/* ==========================================
-   FAHRZEUG AUSFAHREN
-========================================== */
-
-function deployVehicle(vehicle) {
-
-  const element =
-    document.querySelector(
-      `[data-vehicle="${vehicle.id}"]`
-    );
-
-  if (!element) return;
-
-  openGarageDoorForVehicle(vehicle);
-
-  element.classList.add("driving");
-
-  gameStatus.textContent =
-    `${vehicle.name} rückt aus`;
-
-  /*
-   * Fahrzeug fährt zunächst aus der Halle.
-   */
-
-  setTimeout(() => {
-
-    element.style.left = "480px";
-    element.style.top = "170px";
-
-  }, 100);
-
-  /*
-   * Danach fährt es Richtung Einsatz.
-   */
-
-  setTimeout(() => {
-
-    if (state.mission) {
-
-      element.style.left = "1400px";
-      element.style.top = "500px";
-
-    }
-
-  }, 1800);
-
-}
-
-
-function openGarageDoorForVehicle(vehicle) {
-
-  /*
-   * Vereinfachte Torzuordnung.
-   */
-
-  const index = vehicles.findIndex(
-    v => v.id === vehicle.id
+  // Hintergrund
+  world.style.width = "2400px";
+  world.style.height = "1400px";
+
+  // Straßen
+  createMapObject(
+    "road horizontal",
+    0, 570, 2400, 150
   );
 
-  const doorIndex =
-    Math.min(
-      Math.floor(index / 3),
-      3
-    );
+  createMapObject(
+    "road horizontal",
+    0, 970, 2400, 110
+  );
 
-  const doors =
-    document.querySelectorAll(".garage-door");
+  createMapObject(
+    "road vertical",
+    650, 0, 140, 1400
+  );
 
-  if (doors[doorIndex]) {
+  createMapObject(
+    "road vertical",
+    1500, 0, 120, 1400
+  );
 
-    doors[doorIndex].classList.add("open");
+  // Gebäude
+  createBuilding(
+    "🚒 FEUERWEHRWACHE",
+    700, 440, 500, 300,
+    "station"
+  );
 
-  }
+  createBuilding(
+    "🏠 Wohngebiet",
+    200, 100, 330, 190
+  );
 
+  createBuilding(
+    "🏠 Wohnhaus",
+    200, 780, 330, 160
+  );
+
+  createBuilding(
+    "🏫 Schule",
+    900, 100, 300, 180
+  );
+
+  createBuilding(
+    "🏥 Krankenhaus",
+    1330, 150, 320, 220
+  );
+
+  createBuilding(
+    "🏬 Einkaufszentrum",
+    1730, 130, 400, 260
+  );
+
+  createBuilding(
+    "🏭 Industriehalle",
+    1740, 830, 380, 240
+  );
+
+  createBuilding(
+    "🏭 Lagerhalle",
+    1080, 1120, 320, 170
+  );
+
+  // Wasser
+  createMapObject(
+    "water",
+    1770, 520, 500, 250
+  );
+
+  // Bäume
+  const trees = [
+    [70, 100],
+    [130, 170],
+    [570, 90],
+    [610, 190],
+    [70, 760],
+    [120, 850],
+    [580, 800],
+    [620, 900],
+    [1450, 60],
+    [2160, 70],
+    [2220, 430],
+    [2250, 900],
+    [1570, 1120],
+    [1630, 1190],
+    [800, 1120],
+    [930, 1080],
+    [2050, 1120],
+    [2150, 1190]
+  ];
+
+  trees.forEach(([x, y]) => {
+    createTree(x, y);
+  });
+
+  // Straßenbeschriftungen
+  createLabel(
+    "Hauptstraße",
+    1000,
+    525
+  );
+
+  createLabel(
+    "Feuerwehrstraße",
+    760,
+    915
+  );
+
+  createLabel(
+    "Industriestraße",
+    1660,
+    1085
+  );
+
+  createLabel(
+    "Nordallee",
+    1520,
+    45
+  );
 }
 
 
 /* ==========================================
-   FREIES SPIEL
+   KARTENOBJEKT
 ========================================== */
 
-let timerInterval = null;
+function createMapObject(
+  className,
+  x,
+  y,
+  width,
+  height
+) {
 
-function startFreeGameTimer() {
+  const object =
+    document.createElement("div");
 
-  clearInterval(timerInterval);
+  object.className =
+    `map-object ${className}`;
 
-  state.freeGame.timer = 240;
+  object.style.position = "absolute";
 
-  updateFreeTimer();
+  object.style.left =
+    `${x}px`;
 
-  state.freeGame.timerRunning = true;
+  object.style.top =
+    `${y}px`;
 
-  timerInterval = setInterval(() => {
+  object.style.width =
+    `${width}px`;
 
-    if (
-      !state.freeGame.timerRunning ||
-      state.freeGame.activeMission
-    ) {
+  object.style.height =
+    `${height}px`;
 
-      return;
+  world.insertBefore(
+    object,
+    vehicleArea
+  );
 
-    }
-
-    state.freeGame.timer--;
-
-    updateFreeTimer();
-
-    if (state.freeGame.timer <= 0) {
-
-      clearInterval(timerInterval);
-
-      createRandomMission();
-
-    }
-
-  }, 1000);
-
-}
-
-
-function updateFreeTimer() {
-
-  const minutes =
-    Math.floor(state.freeGame.timer / 60);
-
-  const seconds =
-    state.freeGame.timer % 60;
-
-  freeTimer.textContent =
-    `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-
+  return object;
 }
 
 
 /* ==========================================
-   ZUFÄLLIGER EINSATZ
+   GEBÄUDE
 ========================================== */
 
-function createRandomMission() {
+function createBuilding(
+  name,
+  x,
+  y,
+  width,
+  height,
+  type = ""
+) {
 
-  if (state.freeGame.activeMission) {
-    return;
-  }
+  const building =
+    document.createElement("div");
 
-  const mission =
-    missions[
-      Math.floor(
-        Math.random() * missions.length
-      )
-    ];
+  building.className =
+    `map-object building ${type}`;
 
-  startAlarmSequence(mission);
+  building.style.position =
+    "absolute";
 
-}
+  building.style.left =
+    `${x}px`;
 
+  building.style.top =
+    `${y}px`;
 
-/* ==========================================
-   ALARMIERUNG
-========================================== */
+  building.style.width =
+    `${width}px`;
 
-function startAlarmSequence(mission) {
+  building.style.height =
+    `${height}px`;
 
-  state.alarm.active = true;
+  building.style.display =
+    "flex";
 
-  state.mission = mission;
+  building.style.alignItems =
+    "center";
 
-  state.freeGame.activeMission = true;
+  building.style.justifyContent =
+    "center";
 
-  gameStatus.textContent =
-    "🚨 ALARM";
+  building.style.textAlign =
+    "center";
 
-  /*
-   * 1. GONG
-   */
+  building.style.color =
+    "white";
 
-  playAlarmTone();
+  building.style.fontWeight =
+    "bold";
 
-  /*
-   * 2. DURCHSAGE
-   */
+  building.style.fontSize =
+    "16px";
 
-  setTimeout(() => {
+  building.style.background =
+    type === "station"
+      ? "#252c35"
+      : "#414b56";
 
-    speakMission(mission);
+  building.style.border =
+    type === "station"
+      ? "4px solid #d71920"
+      : "3px solid #606b77";
 
-  }, 2200);
+  building.style.borderRadius =
+    "8px";
 
-  /*
-   * 3. MELDER NACH 30 SEKUNDEN
-   */
+  building.style.boxShadow =
+    "0 10px 25px rgba(0,0,0,.35)";
 
-  setTimeout(() => {
+  building.textContent =
+    name;
 
-    showPager(mission);
+  world.insertBefore(
+    building,
+    vehicleArea
+  );
 
-  }, 30000);
+  // Bei der Feuerwehrwache zusätzlich Tore
+  if (type === "station") {
 
-}
+    for (let i = 0; i < 4; i++) {
 
+      const door =
+        document.createElement("div");
 
-/* ==========================================
-   MELDER
-========================================== */
+      door.className =
+        "garage-door";
 
-function showPager(mission) {
+      door.style.position =
+        "absolute";
 
-  pagerMission.textContent =
-    mission.name;
+      door.style.bottom =
+        "15px";
 
-  pager.classList.remove("hidden");
+      door.style.left =
+        `${25 + i * 115}px`;
 
-  state.alarm.pagerVisible = true;
+      door.style.width =
+        "90px";
 
-  gameStatus.textContent =
-    "📟 Einsatzmelder alarmiert";
+      door.style.height =
+        "120px";
 
-}
+      door.style.background =
+        "#11161c";
 
+      door.style.border =
+        "2px solid #65717d";
 
-pagerButton.addEventListener("click", () => {
+      door.style.borderRadius =
+        "5px";
 
-  pager.classList.add("hidden");
-
-  state.alarm.pagerVisible = false;
-
-  state.alarm.active = false;
-
-  gameStatus.textContent =
-    "🚒 Einsatz kann abgearbeitet werden";
-
-  startMission(state.mission);
-
-});
-
-
-/* ==========================================
-   DURCHSAGE
-========================================== */
-
-function speakMission(mission) {
-
-  if (!("speechSynthesis" in window)) {
-    return;
-  }
-
-  const text =
-    `Einsatz für die Feuerwehr. ${mission.name}.`;
-
-  const speech =
-    new SpeechSynthesisUtterance(text);
-
-  speech.lang = "de-DE";
-
-  speech.rate = 0.85;
-  speech.pitch = 0.8;
-  speech.volume = 1;
-
-  window.speechSynthesis.speak(speech);
-
-}
-
-
-/* ==========================================
-   ALARMTON
-========================================== */
-
-function playAlarmTone() {
-
-  /*
-   * Browser erlauben Audio normalerweise erst,
-   * nachdem der Benutzer vorher geklickt hat.
-   *
-   * Deshalb erzeugen wir den Gong hier über Web Audio.
-   */
-
-  try {
-
-    const AudioContext =
-      window.AudioContext ||
-      window.webkitAudioContext;
-
-    const audio =
-      new AudioContext();
-
-    const oscillator =
-      audio.createOscillator();
-
-    const gain =
-      audio.createGain();
-
-    oscillator.type = "sine";
-
-    oscillator.frequency.setValueAtTime(
-      180,
-      audio.currentTime
-    );
-
-    oscillator.frequency.exponentialRampToValueAtTime(
-      80,
-      audio.currentTime + 1.4
-    );
-
-    gain.gain.setValueAtTime(
-      0.001,
-      audio.currentTime
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.6,
-      audio.currentTime + 0.1
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      audio.currentTime + 1.5
-    );
-
-    oscillator.connect(gain);
-    gain.connect(audio.destination);
-
-    oscillator.start();
-
-    oscillator.stop(
-      audio.currentTime + 1.6
-    );
-
-  } catch (error) {
-
-    console.log(
-      "Audio konnte nicht gestartet werden.",
-      error
-    );
-
-  }
-
-}
-
-
-/* ==========================================
-   EINSATZ STARTEN
-========================================== */
-
-function startMission(mission) {
-
-  state.mission = mission;
-
-  state.freeGame.activeMission = true;
-
-  missionTitle.textContent =
-    `${mission.icon} ${mission.name}`;
-
-  missionDescription.textContent =
-    mission.description;
-
-  missionInfo.classList.remove("hidden");
-
-  missionLocation.classList.remove("hidden");
-
-  gameStatus.textContent =
-    `Einsatz läuft: ${mission.name}`;
-
-  /*
-   * Kamera zur Einsatzstelle bewegen.
-   */
-
-  setTimeout(() => {
-
-    focusMission();
-
-  }, 500);
-
-}
-
-
-/* ==========================================
-   KAMERA
-========================================== */
-
-function resetCamera() {
-
-  state.camera.x = -800;
-  state.camera.y = -500;
-  state.camera.zoom = 0.65;
-
-  updateCamera();
-
-}
-
-
-function updateCamera() {
-
-  world.style.transform =
-    `translate(${state.camera.x}px, ${state.camera.y}px) scale(${state.camera.zoom})`;
-
-}
-
-
-/* =========================
-   MAUSRAD
-========================= */
-
-worldViewport.addEventListener(
-  "wheel",
-  event => {
-
-    event.preventDefault();
-
-    const zoomSpeed = 0.08;
-
-    if (event.deltaY < 0) {
-
-      state.camera.zoom += zoomSpeed;
-
-    } else {
-
-      state.camera.zoom -= zoomSpeed;
-
-    }
-
-    state.camera.zoom =
-      Math.max(
-        0.35,
-        Math.min(1.5, state.camera.zoom)
+      building.appendChild(
+        door
       );
-
-    updateCamera();
-
-  },
-  { passive: false }
-);
-
-
-/* =========================
-   KAMERA DRAG
-========================= */
-
-worldViewport.addEventListener(
-  "pointerdown",
-  event => {
-
-    /*
-     * Nicht ziehen, wenn direkt ein Fahrzeug
-     * oder Button angeklickt wurde.
-     */
-
-    if (
-      event.target.closest(".vehicle") ||
-      event.target.closest("button")
-    ) {
-      return;
     }
-
-    state.camera.dragging = true;
-
-    state.camera.lastX = event.clientX;
-    state.camera.lastY = event.clientY;
-
-    worldViewport.classList.add("dragging");
-
   }
-);
-
-
-worldViewport.addEventListener(
-  "pointermove",
-  event => {
-
-    if (!state.camera.dragging) {
-      return;
-    }
-
-    const dx =
-      event.clientX - state.camera.lastX;
-
-    const dy =
-      event.clientY - state.camera.lastY;
-
-    state.camera.x += dx;
-    state.camera.y += dy;
-
-    state.camera.lastX = event.clientX;
-    state.camera.lastY = event.clientY;
-
-    updateCamera();
-
-  }
-);
-
-
-worldViewport.addEventListener(
-  "pointerup",
-  stopCameraDrag
-);
-
-worldViewport.addEventListener(
-  "pointercancel",
-  stopCameraDrag
-);
-
-
-function stopCameraDrag() {
-
-  state.camera.dragging = false;
-
-  worldViewport.classList.remove("dragging");
-
 }
 
 
 /* ==========================================
-   WASD / PFEILTASTEN
+   BÄUME
 ========================================== */
 
-window.addEventListener("keydown", event => {
+function createTree(x, y) {
 
-  if (!gameScreen.classList.contains("active")) {
-    return;
-  }
+  const tree =
+    document.createElement("div");
 
-  const speed = 25;
+  tree.className =
+    "map-object tree";
 
-  switch (event.key.toLowerCase()) {
+  tree.style.position =
+    "absolute";
 
-    case "w":
-    case "arrowup":
-      state.camera.y += speed;
-      break;
+  tree.style.left =
+    `${x}px`;
 
-    case "s":
-    case "arrowdown":
-      state.camera.y -= speed;
-      break;
+  tree.style.top =
+    `${y}px`;
 
-    case "a":
-    case "arrowleft":
-      state.camera.x += speed;
-      break;
+  tree.style.width =
+    "32px";
 
-    case "d":
-    case "arrowright":
-      state.camera.x -= speed;
-      break;
+  tree.style.height =
+    "32px";
 
-    default:
-      return;
+  tree.style.borderRadius =
+    "50%";
 
-  }
+  tree.style.background =
+    "#207346";
 
-  event.preventDefault();
+  tree.style.border =
+    "4px solid #2c985d";
 
-  updateCamera();
+  tree.style.boxShadow =
+    "0 5px 10px rgba(0,0,0,.35)";
 
-});
-
-
-/* ==========================================
-   ZUR EINSATZSTELLE
-========================================== */
-
-function focusMission() {
-
-  /*
-   * Einfache Kamerafahrt.
-   */
-
-  const startX = state.camera.x;
-  const startY = state.camera.y;
-
-  const targetX = -1450;
-  const targetY = -300;
-
-  const duration = 1800;
-
-  const startTime = performance.now();
-
-  function animate(now) {
-
-    const progress =
-      Math.min(
-        (now - startTime) / duration,
-        1
-      );
-
-    const eased =
-      1 - Math.pow(1 - progress, 3);
-
-    state.camera.x =
-      startX +
-      (targetX - startX) * eased;
-
-    state.camera.y =
-      startY +
-      (targetY - startY) * eased;
-
-    updateCamera();
-
-    if (progress < 1) {
-
-      requestAnimationFrame(animate);
-
-    }
-
-  }
-
-  requestAnimationFrame(animate);
-
+  world.insertBefore(
+    tree,
+    vehicleArea
+  );
 }
 
 
 /* ==========================================
-   START
+   BESCHRIFTUNG
 ========================================== */
 
-showScreen(mainMenu);
+function createLabel(
+  text,
+  x,
+  y
+) {
+
+  const label =
+    document.createElement("div");
+
+  label.className =
+    "map-object";
+
+  label.style.position =
+    "absolute";
+
+  label.style.left =
+    `${x}px`;
+
+  label.style.top =
+    `${y}px`;
+
+  label.style.color =
+    "rgba(255,255,255,.45)";
+
+  label.style.fontSize =
+    "13px";
+
+  label.style.fontWeight =
+    "bold";
+
+  label.style.letterSpacing =
+    "2px";
+
+  label.textContent =
+    text;
+
+  world.insertBefore(
+    label,
+    vehicleArea
+  );
+}
