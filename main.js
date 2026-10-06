@@ -71,10 +71,110 @@ function showMission(title,desc,icon='🚨'){
  document.querySelector('#hose').onclick=()=>alert('Schlauchmodus: Hydrant → Fahrzeug. Schnellangriff und weitere Schlaucharten folgen.');
  document.querySelector('#ladder').onclick=()=>alert('DLK: Leiter wird in der nächsten Ausbaustufe animiert ausgefahren.');
 }
-document.querySelector('#freePlay').onclick=()=>{menu.classList.remove('active');game.classList.add('active');createScene()};
-document.querySelector('#missions').onclick=()=>{menu.classList.remove('active');game.classList.add('active');createScene();setTimeout(()=>{missionPanel.classList.remove('hidden');missionPanel.innerHTML='<h2>🚨 Einsatz auswählen</h2>'+missionData.map((m,i)=>`<button class="option mission" data-i="${i}">${m[3]} ${m[0]} <span class="tag">${m[2]}</span><br><small>${m[1]}</small></button>`).join('')+'<button class="option" id="closeM">Schließen</button>';document.querySelectorAll('.mission').forEach(b=>b.onclick=()=>{let m=missionData[b.dataset.i];showMission(m[0],m[1],m[3])});document.querySelector('#closeM').onclick=()=>missionPanel.classList.add('hidden')},300)};
-document.querySelector('#missionBtn').onclick=()=>{missionPanel.classList.remove('hidden');missionPanel.innerHTML='<h2>🚨 Einsatzarten</h2>'+missionData.map((m,i)=>`<button class="option mission" data-i="${i}">${m[3]} ${m[0]} <span class="tag">${m[2]}</span></button>`).join('')+'<button class="option" id="closeM">Schließen</button>';document.querySelectorAll('.mission').forEach(b=>b.onclick=()=>{let m=missionData[b.dataset.i];showMission(m[0],m[1],m[3])});document.querySelector('#closeM').onclick=()=>missionPanel.classList.add('hidden')};
-document.querySelector('#back').onclick=()=>{game.classList.remove('active');menu.classList.add('active');if(renderer){renderer.dispose();canvas.innerHTML=''}};
-let remaining=240;setInterval(()=>{if(game.classList.contains('active')){remaining--;if(remaining<0)remaining=240;let m=Math.floor(remaining/60),s=remaining%60;document.querySelector('#clock').textContent=`00:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`}},1000);
+
+// --- Navigation ------------------------------------------------------------
+function enterGame(mode){
+  menu.classList.remove('active');
+  game.classList.add('active');
+  createScene();
+  if(mode==='missions') setTimeout(openMissionMenu,250);
+}
+
+document.querySelector('#freePlay').addEventListener('click',()=>enterGame('free'));
+document.querySelector('#missions').addEventListener('click',()=>enterGame('missions'));
+
+document.querySelector('#back').addEventListener('click',()=>{
+  game.classList.remove('active');
+  menu.classList.add('active');
+  vehiclePanel.classList.add('hidden');
+  missionPanel.classList.add('hidden');
+  if(renderer){renderer.dispose();renderer.domElement?.remove();renderer=null;}
+});
+
+// --- Einsatzmenü -----------------------------------------------------------
+function openMissionMenu(){
+  missionPanel.classList.remove('hidden');
+  missionPanel.innerHTML=`
+    <h2>🚨 Einsatz auswählen</h2>
+    <p>Wähle einen Einsatz. Danach befindest du dich direkt am Einsatzort.</p>
+    ${missionData.map((m,i)=>`
+      <button class="option mission" data-i="${i}">
+        ${m[3]} <b>${m[0]}</b> <span class="tag">${m[2]}</span><br>
+        <small>${m[1]}</small>
+      </button>`).join('')}
+    <button class="option" id="closeM">← Zurück</button>`;
+  document.querySelectorAll('.mission').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const m=missionData[Number(b.dataset.i)];
+      showMission(m[0],m[1],m[3],true);
+    });
+  });
+  document.querySelector('#closeM').addEventListener('click',()=>missionPanel.classList.add('hidden'));
+}
+
+document.querySelector('#missionBtn').addEventListener('click',openMissionMenu);
+
+// --- Einsatz ---------------------------------------------------------------
+function showMission(title,desc,icon='🚨',direct=false){
+  missionPanel.classList.remove('hidden');
+  missionPanel.innerHTML=`
+    <h2>${icon} ${title}</h2>
+    <p>${desc}</p>
+    <div class="alarm">EINSATZORT: <b>bereit</b></div>
+    <button class="option" id="chooseVehicle">🚒 Fahrzeuge alarmieren</button>
+    <button class="option" id="position">📍 Fahrzeug positionieren</button>
+    <button class="option" id="hose">💧 Schlauchleitung / Hydrant</button>
+    <button class="option" id="ladder">🪜 DLK ausfahren / Personen retten</button>
+    <button class="option" id="closeM">Schließen</button>`;
+  document.querySelector('#closeM').onclick=()=>missionPanel.classList.add('hidden');
+  document.querySelector('#chooseVehicle').onclick=openVehicleAlarm;
+  document.querySelector('#position').onclick=()=>alert('Positionierungsmodus aktiviert: Klicke anschließend auf eine Straße oder einen Seitenstreifen.');
+  document.querySelector('#hose').onclick=()=>alert('Schlauchmodus: Hydrant auswählen → Schlauchtyp auswählen → zum Fahrzeug verlegen.');
+  document.querySelector('#ladder').onclick=()=>alert('DLK-Modus: Drehleiter ausfahren und anschließend den Rettungspunkt am Gebäude auswählen.');
+}
+
+// Fahrzeuge für den Einsatz auswählen
+function openVehicleAlarm(){
+  missionPanel.innerHTML=`
+    <h2>🚒 Fahrzeuge alarmieren</h2>
+    <p>Wähle ein oder mehrere Fahrzeuge. Sie fahren anschließend zum Einsatz.</p>
+    ${vehicles.map((v,i)=>`
+      <button class="option vehicleAlarm" data-i="${i}">
+        🚒 <b>${v[0]}</b> · ${v[1]} · ${v[2]} Einsatzkräfte
+      </button>`).join('')}
+    <button class="option" id="doneAlarm">✓ Alarmierung abschließen</button>`;
+  document.querySelectorAll('.vehicleAlarm').forEach(b=>{
+    b.onclick=()=>{
+      b.textContent='✓ '+vehicles[Number(b.dataset.i)][0]+' alarmiert';
+      b.disabled=true;
+      b.style.opacity='.7';
+    };
+  });
+  document.querySelector('#doneAlarm').onclick=()=>{
+    missionPanel.innerHTML=`
+      <h2>🚨 Alarmierung läuft</h2>
+      <p>Die ausgewählten Fahrzeuge rücken aus. Die Garagentore öffnen sich automatisch.</p>
+      <button class="option" id="toStation">🚒 Zur Wache / weitere Fahrzeuge</button>
+      <button class="option" id="closeM">Weiter zum Einsatz</button>`;
+    document.querySelector('#closeM').onclick=()=>{
+      missionPanel.classList.add('hidden');
+      alert('Einsatzort erreicht. Fahrzeugpositionierung und Gerätemenü sind bereit.');
+    };
+    document.querySelector('#toStation').onclick=()=>{missionPanel.classList.add('hidden')};
+  };
+}
+
+// --- Bereitschafts-Timer: 10 Minuten --------------------------------------
+let remaining=600;
+setInterval(()=>{
+  if(game.classList.contains('active')){
+    remaining--;
+    if(remaining<0) remaining=600;
+    const m=Math.floor(remaining/60), s=remaining%60;
+    document.querySelector('#clock').textContent=
+      `00:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+},1000);
+
 function animate(){requestAnimationFrame(animate);if(!renderer)return;controls.update();renderer.render(scene,camera)}
 addEventListener('resize',()=>{if(camera&&renderer){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)}});
