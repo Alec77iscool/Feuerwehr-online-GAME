@@ -43,3 +43,8 @@ Die Webseite kann direkt über GitHub Pages veröffentlicht werden.
 - **Freies Spiel:** öffnet die 3D-Wache und startet die 10-Minuten-Bereitschaft. Einsätze können anschließend über den Einsatz-Button geöffnet werden.
 - **Einsätze:** öffnet direkt das Einsatz-Auswahlmenü. Nach Auswahl eines Einsatzes bist du direkt im Einsatz und kannst Fahrzeuge alarmieren.
 - Fahrzeuge werden einzeln ausgewählt und alarmiert.
+
+
+## Fehlerbehebung v3
+
+Die Browser-Auflösung von Three.js/OrbitControls wurde über eine Import Map korrigiert. Dadurch funktionieren die Menü-Buttons auch auf GitHub Pages korrekt.
