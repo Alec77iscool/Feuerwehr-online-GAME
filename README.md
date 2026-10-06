@@ -15,34 +15,32 @@ Die Webseite kann direkt über GitHub Pages veröffentlicht werden.
 ## Aktueller Prototyp
 
 - Startmenü: Freies Spiel / Einsätze
-- 3D-Wache mit Vogelperspektive
+- Gemeinsame 3D-Stadtkarte mit Wache, Straßen, Gebäuden und Wald
 - 15 Fahrzeuge in der Fahrzeugdatenbank
-- klickbare Garagentore
-- Fahrzeugauswahl und Ausrücken
-- Einsatzarten: Klein-, Mittel- und Großlagen
-- Waldbrand mit Hydrant als vorbereitete Spielmechanik
-- Fahrzeugpositionierung, Schlauchleitung und DLK als Spielaktionen
-- digitale Bereitschaftsuhr
+- klickbare Garagentore mit direkter Fahrzeugauswahl
+- fünf Einsätze mit eigenen Orten und passenden 3D-Elementen: Mülltonnenbrand, Wohnungsbrand, Waldbrand, Verkehrsunfall und Einkaufszentrum
+- mehrere Fahrzeuge auswählen und alarmieren; einfache 3D-Fahrzeugmodelle fahren mit Blaulicht vom Gerätehaus zum Einsatz
+- ausgerücktes Fahrzeug per Klick auf eine Straße positionieren
+- kurzes synthetisches Einsatzsignal bei der Alarmierung
+- zehnminütige Bereitschaftsuhr im freien Spiel
 
 ## Nächste Ausbaustufen
 
 1. echte GLB/GLTF-Fahrzeugmodelle
-2. animierte Garagentore und ausrückende Fahrzeuge
-3. Einsatz-Gong und KI-Sprachdurchsage
-4. frei klickbare Open-World-Einsatzorte
-5. Straßenrouting für Einsatzfahrzeuge
-6. echte Hydranten- und Schlauchphysik
-7. Schnellangriff / B-Schlauch / weitere Schlauchtypen
-8. DLK-Ausleger und Personenrettung
-9. realistische Einsatzkräfte und Animationen
-10. eigene Einsätze erstellen
+2. größere, frei erkundbare Karten mit mehr Einsatzorten
+3. realistischeres Straßenrouting und Fahrzeugverhalten
+4. Hydranten- und Schlauchphysik mit verschiedenen Schlauchtypen
+5. animierter DLK-Ausleger und Personenrettung
+6. realistische Einsatzkräfte und Animationen
+7. eigene Einsätze erstellen
 
 
 ## Bedienlogik
 
-- **Freies Spiel:** öffnet die 3D-Wache und startet die 10-Minuten-Bereitschaft. Einsätze können anschließend über den Einsatz-Button geöffnet werden.
-- **Einsätze:** öffnet direkt das Einsatz-Auswahlmenü. Nach Auswahl eines Einsatzes bist du direkt im Einsatz und kannst Fahrzeuge alarmieren.
-- Fahrzeuge werden einzeln ausgewählt und alarmiert.
+- **Freies Spiel:** öffnet die 3D-Karte und startet die zehnminütige Bereitschaft. Einsätze lassen sich anschließend über den Einsatz-Button auswählen.
+- **Einsätze:** öffnet die Einsatzliste. Nach der Auswahl zeigt die Karte den jeweiligen Einsatzort und passende 3D-Elemente.
+- **Alarmierung:** Fahrzeuge können einzeln über ein Garagentor oder gesammelt über die Fahrzeugliste alarmiert werden. Sie rücken sichtbar zum Einsatzort aus.
+- **Positionierung:** nach der Alarmierung lässt sich das zuletzt ausgerückte Fahrzeug auf einer Straße abstellen.
 
 
 ## Fehlerbehebung v3
