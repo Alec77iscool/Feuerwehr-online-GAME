@@ -1,0 +1,77 @@
+[
+  {
+    "name": "ELW 1",
+    "type": "ELW",
+    "crew": 2
+  },
+  {
+    "name": "ELW 2",
+    "type": "ELW",
+    "crew": 2
+  },
+  {
+    "name": "DLK 1",
+    "type": "DLK",
+    "crew": 2
+  },
+  {
+    "name": "DLK 2",
+    "type": "DLK",
+    "crew": 2
+  },
+  {
+    "name": "LRF 1",
+    "type": "LRF",
+    "crew": 5
+  },
+  {
+    "name": "LRF 2",
+    "type": "LRF",
+    "crew": 5
+  },
+  {
+    "name": "LRF 3",
+    "type": "LRF",
+    "crew": 5
+  },
+  {
+    "name": "LRF 4",
+    "type": "LRF",
+    "crew": 5
+  },
+  {
+    "name": "HLF 1",
+    "type": "HLF",
+    "crew": 5
+  },
+  {
+    "name": "HLF 2",
+    "type": "HLF",
+    "crew": 5
+  },
+  {
+    "name": "HLF 3",
+    "type": "HLF",
+    "crew": 5
+  },
+  {
+    "name": "HLF 4",
+    "type": "HLF",
+    "crew": 5
+  },
+  {
+    "name": "RTW 1",
+    "type": "RTW",
+    "crew": 2
+  },
+  {
+    "name": "RTW 2",
+    "type": "RTW",
+    "crew": 2
+  },
+  {
+    "name": "NEF 1",
+    "type": "NEF",
+    "crew": 2
+  }
+]

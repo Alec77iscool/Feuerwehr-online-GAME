@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Feuerwehr Einsatzleiter</title>
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+  <div id="menu" class="screen active">
+    <div class="menu-card">
+      <div class="badge">🚒 FEUERWEHR • EINSATZLEITER</div>
+      <h1>Einsatzleiter</h1>
+      <p>Deine Feuer- und Rettungswache. Entscheide, alarmiere und führe den Einsatz.</p>
+      <div class="menu-grid">
+        <button class="bigbtn" id="freePlay"><strong>🌍 Freies Spiel</strong><span>Wache & Open World erkunden</span></button>
+        <button class="bigbtn" id="missions"><strong>🚨 Einsätze</strong><span>Brände, Unfälle und Sonderlagen</span></button>
+      </div>
+      <div class="hint">Prototyp • Three.js • GitHub Pages ready</div>
+    </div>
+  </div>
+
+  <div id="game" class="screen">
+    <div class="hud">
+      <button id="back">← Menü</button>
+      <div class="title">🚒 Feuer- und Rettungswache</div>
+      <div class="clock" id="clock">00:04:00</div>
+      <button id="missionBtn">🚨 Einsatz</button>
+    </div>
+    <div id="canvas"></div>
+    <div id="vehiclePanel" class="panel hidden"></div>
+    <div id="missionPanel" class="panel hidden"></div>
+    <div class="help">Klicke auf ein Garagentor • Ziehen = Kamera drehen • Mausrad = zoomen</div>
+  </div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
